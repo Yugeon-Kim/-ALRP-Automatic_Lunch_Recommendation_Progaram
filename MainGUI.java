@@ -1,27 +1,23 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MainGUI extends JFrame {
- static void showResultDialog(String string, String imagePath) {
-    }    public static void main(String[] args) {
-        // 메뉴 데이터 로드
-        String filePath = "menu_data.txt"; // 파일 경로
-        List<MenuData> menuList = MenuLoader.loadMenuData(filePath);
-        if (menuList.isEmpty()) {
-            System.out.println("메뉴 데이터를 로드할 수 없습니다. 프로그램을 종료합니다.");
-            return;
-        }
+    private DefaultListModel<String> rankingModel;
 
-        MenuSelector selector = new MenuSelector(menuList);
+    public MainGUI(List<MenuData> menuList) {
+        // 메인 프레임 설정
+        setTitle("추천 시스템");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(600, 400);
+        setLayout(new BorderLayout(10, 10));
 
-        // GUI 구성
-        JFrame frame = new JFrame("취향 선택기");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 300);
-        frame.setLayout(new GridLayout(6, 2, 10, 10));
-
-        // 컴포넌트 생성
+        // 왼쪽: 추천 조건 입력
+        JPanel leftPanel = new JPanel(new GridLayout(6, 2, 10, 10));
         JLabel tasteLabel = new JLabel("맛:");
         String[] tastes = {"", "달콤한", "매운", "짭짤한", "담백한"};
         JComboBox<String> tasteComboBox = new JComboBox<>(tastes);
@@ -37,83 +33,143 @@ public class MainGUI extends JFrame {
         JTextField excludeField = new JTextField();
 
         JButton drawButton = new JButton("추첨하기");
+
+        leftPanel.add(tasteLabel);
+        leftPanel.add(tasteComboBox);
+        leftPanel.add(typeLabel);
+        leftPanel.add(typeComboBox);
+        leftPanel.add(priceLabel);
+        leftPanel.add(priceField);
+        leftPanel.add(excludeLabel);
+        leftPanel.add(excludeField);
+        leftPanel.add(new JLabel());
+        leftPanel.add(drawButton);
+
+        add(leftPanel, BorderLayout.CENTER);
+
+        // 오른쪽: 추천 랭킹
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        JLabel rankingLabel = new JLabel("추천 랭킹 (Top 5)");
+        rankingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        rankingModel = new DefaultListModel<>();
+        JList<String> rankingList = new JList<>(rankingModel);
+        updateRanking();
+
+        rightPanel.add(rankingLabel, BorderLayout.NORTH);
+        rightPanel.add(new JScrollPane(rankingList), BorderLayout.CENTER);
+        add(rightPanel, BorderLayout.EAST);
+
+        // 추천 버튼 이벤트
         drawButton.addActionListener(e -> {
             String taste = (String) tasteComboBox.getSelectedItem();
             String type = (String) typeComboBox.getSelectedItem();
             String price = priceField.getText();
             String exclude = excludeField.getText();
 
+            // 메뉴 선택 로직
+            MenuSelector selector = new MenuSelector(menuList);
             MenuData result = selector.selectRandomMenu(taste, type, price, exclude);
 
             if (result != null) {
-                showResultDialog(result);
+                showRecommendationDialog(result);
             } else {
-                JOptionPane.showMessageDialog(null, "조건에 맞는 메뉴가 없습니다.", "추천 메뉴", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "조건에 맞는 메뉴가 없습니다.", "추천 결과", JOptionPane.WARNING_MESSAGE);
             }
         });
 
-
-
-        // 프레임에 컴포넌트 추가
-        frame.add(tasteLabel);
-        frame.add(tasteComboBox);
-        frame.add(typeLabel);
-        frame.add(typeComboBox);
-        frame.add(priceLabel);
-        frame.add(priceField);
-        frame.add(excludeLabel);
-        frame.add(excludeField);
-        frame.add(new JLabel()); // 빈 공간
-        frame.add(drawButton);
-
-        frame.setVisible(true);
+        setVisible(true);
     }
 
+    // 다이얼로그 표시
+    private void showRecommendationDialog(MenuData menu) {
+        JDialog dialog = new JDialog(this, "추천 결과", true);
+        dialog.setSize(400, 300);
+        dialog.setLayout(new BorderLayout());
 
-
-    private static void showResultDialog(MenuData menu) {
-        // 이미지 로드
-        ImageIcon icon = new ImageIcon(menu.getImagePath());
-        Image image = icon.getImage().getScaledInstance(200, 150, Image.SCALE_SMOOTH);
-        icon = new ImageIcon(image);
-
-        // 다이얼로그 패널 생성
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-        // 첫 줄: 맛집 이름
-        JLabel nameLabel = new JLabel(menu.getName());
-        nameLabel.setFont(new Font("Serif", Font.BOLD, 16));
-        nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // 두 번째 줄: 사진
-        JLabel imageLabel = new JLabel(icon);
-        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // 세부 정보 추가
+        // 메뉴 정보 표시
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        JLabel nameLabel = new JLabel("맛집: " + menu.getName());
+        JLabel menuLabel = new JLabel("메뉴: " + menu.getMenuName());
         JLabel tasteLabel = new JLabel("맛: " + menu.getTaste());
         JLabel priceLabel = new JLabel("가격: " + menu.getPrice() + "원");
         JLabel typeLabel = new JLabel("종류: " + menu.getType());
-        JLabel locationLabel = new JLabel("위치: " + menu.getMenuName());
 
-        tasteLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        priceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        typeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        locationLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        infoPanel.add(nameLabel);
+        infoPanel.add(menuLabel);
+        infoPanel.add(tasteLabel);
+        infoPanel.add(priceLabel);
+        infoPanel.add(typeLabel);
 
-        // 패널에 컴포넌트 추가
-        panel.add(nameLabel);
-        panel.add(Box.createVerticalStrut(10)); // 간격
-        panel.add(imageLabel);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(tasteLabel);
-        panel.add(priceLabel);
-        panel.add(typeLabel);
-        panel.add(locationLabel);
+        dialog.add(infoPanel, BorderLayout.CENTER);
 
-        // 다이얼로그 생성 및 표시
-        JOptionPane.showMessageDialog(null, panel, "추천 메뉴", JOptionPane.PLAIN_MESSAGE);
+        // 버튼 패널
+        JPanel buttonPanel = new JPanel();
+        JButton recommendButton = new JButton("추천");
+        JButton closeButton = new JButton("뒤로");
+
+        recommendButton.addActionListener(e -> {
+            saveRecommendation(menu);
+            updateRanking();
+            dialog.dispose();
+        });
+
+        closeButton.addActionListener(e -> dialog.dispose());
+
+        buttonPanel.add(recommendButton);
+        buttonPanel.add(closeButton);
+
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.setVisible(true);
     }
 
+    // 추천 기록 저장
+    private void saveRecommendation(MenuData menu) {
+        try (FileWriter fw = new FileWriter("recommendations.txt", true)) {
+            fw.write(menu.getName() + "," + menu.getMenuName() + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    // 추천 랭킹 업데이트
+    private void updateRanking() {
+        Map<String, Integer> recommendationCounts = new HashMap<>();
+
+        // 추천 파일 읽기
+        try (BufferedReader br = new BufferedReader(new FileReader("recommendations.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                recommendationCounts.put(line, recommendationCounts.getOrDefault(line, 0) + 1);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 랭킹 정렬 및 출력
+        List<Map.Entry<String, Integer>> sortedList = recommendationCounts.entrySet()
+                .stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .limit(5)
+                .collect(Collectors.toList());
+
+        rankingModel.clear();
+        for (Map.Entry<String, Integer> entry : sortedList) {
+            rankingModel.addElement(entry.getKey() + " (" + entry.getValue() + "회 추천)");
+        }
+    }
+
+    public static void main(String[] args) {
+        List<MenuData> menuList = Arrays.asList(
+                new MenuData("맛집A", "김치찌개", "매운", "7000", "한식", "kimchi.jpg"),
+                new MenuData("맛집B", "파스타", "달콤한", "12000", "양식", "pasta.jpg"),
+                new MenuData("맛집C", "초밥", "담백한", "15000", "일식", "sushi.jpg"),
+                new MenuData("맛집D", "짜장면", "짭짤한", "8000", "중식", "jajang.jpg")
+        );
+
+
+
+        new MainGUI(menuList);
+    }
 }
