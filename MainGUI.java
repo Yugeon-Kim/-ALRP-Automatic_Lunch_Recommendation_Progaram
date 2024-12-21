@@ -1,11 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
 import java.util.List;
 
 public class MainGUI extends JFrame {
-    public static void main(String[] args) {
+ static void showResultDialog(String string, String imagePath) {
+    }    public static void main(String[] args) {
         // 메뉴 데이터 로드
         String filePath = "menu_data.txt"; // 파일 경로
         List<MenuData> menuList = MenuLoader.loadMenuData(filePath);
@@ -37,9 +36,6 @@ public class MainGUI extends JFrame {
         JLabel excludeLabel = new JLabel("제외:");
         JTextField excludeField = new JTextField();
 
-        JLabel resultLabel = new JLabel("결과가 여기에 표시됩니다.");
-        resultLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
         JButton drawButton = new JButton("추첨하기");
         drawButton.addActionListener(e -> {
             String taste = (String) tasteComboBox.getSelectedItem();
@@ -50,11 +46,13 @@ public class MainGUI extends JFrame {
             MenuData result = selector.selectRandomMenu(taste, type, price, exclude);
 
             if (result != null) {
-                resultLabel.setText("<html>선택된 메뉴:<br>" + result + "</html>");
+                showResultDialog(result);
             } else {
-                resultLabel.setText("조건에 맞는 메뉴가 없습니다.");
+                JOptionPane.showMessageDialog(null, "조건에 맞는 메뉴가 없습니다.", "추천 메뉴", JOptionPane.WARNING_MESSAGE);
             }
         });
+
+
 
         // 프레임에 컴포넌트 추가
         frame.add(tasteLabel);
@@ -67,8 +65,55 @@ public class MainGUI extends JFrame {
         frame.add(excludeField);
         frame.add(new JLabel()); // 빈 공간
         frame.add(drawButton);
-        frame.add(resultLabel);
 
         frame.setVisible(true);
     }
+
+
+
+    private static void showResultDialog(MenuData menu) {
+        // 이미지 로드
+        ImageIcon icon = new ImageIcon(menu.getImagePath());
+        Image image = icon.getImage().getScaledInstance(200, 150, Image.SCALE_SMOOTH);
+        icon = new ImageIcon(image);
+
+        // 다이얼로그 패널 생성
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        // 첫 줄: 맛집 이름
+        JLabel nameLabel = new JLabel(menu.getName());
+        nameLabel.setFont(new Font("Serif", Font.BOLD, 16));
+        nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // 두 번째 줄: 사진
+        JLabel imageLabel = new JLabel(icon);
+        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // 세부 정보 추가
+        JLabel tasteLabel = new JLabel("맛: " + menu.getTaste());
+        JLabel priceLabel = new JLabel("가격: " + menu.getPrice() + "원");
+        JLabel typeLabel = new JLabel("종류: " + menu.getType());
+        JLabel locationLabel = new JLabel("위치: " + menu.getMenuName());
+
+        tasteLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        priceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        typeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        locationLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // 패널에 컴포넌트 추가
+        panel.add(nameLabel);
+        panel.add(Box.createVerticalStrut(10)); // 간격
+        panel.add(imageLabel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(tasteLabel);
+        panel.add(priceLabel);
+        panel.add(typeLabel);
+        panel.add(locationLabel);
+
+        // 다이얼로그 생성 및 표시
+        JOptionPane.showMessageDialog(null, panel, "추천 메뉴", JOptionPane.PLAIN_MESSAGE);
+    }
+
+
 }
