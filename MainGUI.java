@@ -6,23 +6,23 @@ import java.util.List;
 
 public class MainGUI extends JFrame {
     public static void main(String[] args) {
-        // 테스트 데이터
-        List<MenuData> menuList = Arrays.asList(
-                new MenuData("맛집A", "김치찌개", "매운", "7000", "한식"),
-                new MenuData("맛집B", "파스타", "달콤한", "12000", "양식"),
-                new MenuData("맛집C", "초밥", "담백한", "15000", "일식"),
-                new MenuData("맛집D", "짜장면", "짭짤한", "8000", "중식")
-        );
+        // 메뉴 데이터 로드
+        String filePath = "menu_data.txt"; // 파일 경로
+        List<MenuData> menuList = MenuLoader.loadMenuData(filePath);
+        if (menuList.isEmpty()) {
+            System.out.println("메뉴 데이터를 로드할 수 없습니다. 프로그램을 종료합니다.");
+            return;
+        }
 
         MenuSelector selector = new MenuSelector(menuList);
 
-        // 프레임 생성
+        // GUI 구성
         JFrame frame = new JFrame("취향 선택기");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 300);
         frame.setLayout(new GridLayout(6, 2, 10, 10));
 
-        // GUI 컴포넌트
+        // 컴포넌트 생성
         JLabel tasteLabel = new JLabel("맛:");
         String[] tastes = {"", "달콤한", "매운", "짭짤한", "담백한"};
         JComboBox<String> tasteComboBox = new JComboBox<>(tastes);
