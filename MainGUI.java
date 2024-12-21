@@ -54,7 +54,7 @@ public class MainGUI extends JFrame {
 
         rankingModel = new DefaultListModel<>();
         JList<String> rankingList = new JList<>(rankingModel);
-        updateRanking();
+        updateRanking(); // 프로그램 시작 시 랭킹 업데이트
 
         rightPanel.add(rankingLabel, BorderLayout.NORTH);
         rightPanel.add(new JScrollPane(rankingList), BorderLayout.CENTER);
@@ -111,7 +111,7 @@ public class MainGUI extends JFrame {
 
         recommendButton.addActionListener(e -> {
             saveRecommendation(menu);
-            updateRanking();
+            updateRanking(); // 추천 후 랭킹 업데이트
             dialog.dispose();
         });
 
@@ -137,8 +137,20 @@ public class MainGUI extends JFrame {
     private void updateRanking() {
         Map<String, Integer> recommendationCounts = new HashMap<>();
 
+        // 파일 존재 여부 확인 및 생성
+        File file = new File("recommendations.txt");
+        if (!file.exists()) {
+            try {
+                if (file.createNewFile()) {
+                    System.out.println("recommendations.txt 파일이 생성되었습니다.");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         // 추천 파일 읽기
-        try (BufferedReader br = new BufferedReader(new FileReader("recommendations.txt"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
                 recommendationCounts.put(line, recommendationCounts.getOrDefault(line, 0) + 1);
@@ -167,8 +179,6 @@ public class MainGUI extends JFrame {
                 new MenuData("맛집C", "초밥", "담백한", "15000", "일식", "sushi.jpg"),
                 new MenuData("맛집D", "짜장면", "짭짤한", "8000", "중식", "jajang.jpg")
         );
-
-
 
         new MainGUI(menuList);
     }
