@@ -36,6 +36,11 @@ public class MainGUI extends JFrame {
         JLabel priceLabel = new JLabel("가격:");
         JTextField priceField = new JTextField("");
 
+        JLabel locationLabel = new JLabel("위치:");
+        String[] locations = {"", "중문", "정문", "문화제조창"};
+        JComboBox<String> locationComboBox = new JComboBox<>(locations);
+
+
         JLabel excludeLabel = new JLabel("제외:");
         JTextField excludeField = new JTextField("");
 
@@ -47,6 +52,8 @@ public class MainGUI extends JFrame {
         leftPanel.add(typeComboBox);
         leftPanel.add(priceLabel);
         leftPanel.add(priceField);
+        leftPanel.add(locationLabel);
+        leftPanel.add(locationComboBox);
         leftPanel.add(excludeLabel);
         leftPanel.add(excludeField);
         leftPanel.add(new JLabel());
@@ -86,17 +93,18 @@ public class MainGUI extends JFrame {
             String type = (String) typeComboBox.getSelectedItem();
             String price = priceField.getText();
             String exclude = excludeField.getText();
+            String location = (String) locationComboBox.getSelectedItem(); // 위치 추가
 
-            // 메뉴 선택 로직
             MenuSelector selector = new MenuSelector(menuList);
-            MenuData result = selector.selectRandomMenu(taste, type, price, exclude);
+            MenuData result = selector.selectRandomMenu(taste, type, price, exclude, location);
 
             if (result != null) {
-                showRecommendationDialog(result); // 다이얼로그 호출
+                showRecommendationDialog(result);
             } else {
                 JOptionPane.showMessageDialog(this, "조건에 맞는 메뉴가 없습니다.", "추천 결과", JOptionPane.WARNING_MESSAGE);
             }
         });
+
 
 
         setVisible(true);
@@ -124,19 +132,19 @@ public class MainGUI extends JFrame {
     // 다이얼로그 표시
     private void showRecommendationDialog(MenuData menu) {
         JDialog dialog = new JDialog(this, "추천 결과", true);
-        dialog.setSize(400, 350);
+        dialog.setSize(400, 400);
         dialog.setLayout(new BorderLayout());
 
         // 메뉴 정보 패널
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setBackground(Color.WHITE);
 
-        // 첫 줄: 맛집 이름
-        JLabel nameLabel = new JLabel(menu.getName());
-        nameLabel.setFont(new Font("Serif", Font.BOLD, 16));
+        JLabel nameLabel = new JLabel("맛집: " + menu.getName());
+        nameLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 두 번째 줄: 메뉴 사진
+        // 이미지 처리
         ImageIcon icon = new ImageIcon(menu.getImagePath());
         if (icon.getIconWidth() > 0) {
             Image image = icon.getImage().getScaledInstance(200, 150, Image.SCALE_SMOOTH);
@@ -147,18 +155,19 @@ public class MainGUI extends JFrame {
         JLabel imageLabel = new JLabel(icon);
         imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 세부 정보
+        // 텍스트 정보
         JLabel menuLabel = new JLabel("메뉴: " + menu.getMenuName());
         JLabel tasteLabel = new JLabel("맛: " + menu.getTaste());
         JLabel priceLabel = new JLabel("가격: " + menu.getPrice() + "원");
         JLabel typeLabel = new JLabel("종류: " + menu.getType());
+        JLabel locationLabel = new JLabel("위치: " + menu.getLocation());
 
         menuLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         tasteLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         priceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         typeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        locationLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 패널에 컴포넌트 추가
         infoPanel.add(nameLabel);
         infoPanel.add(Box.createVerticalStrut(10)); // 간격
         infoPanel.add(imageLabel);
@@ -167,30 +176,39 @@ public class MainGUI extends JFrame {
         infoPanel.add(tasteLabel);
         infoPanel.add(priceLabel);
         infoPanel.add(typeLabel);
+        infoPanel.add(locationLabel);
 
         dialog.add(infoPanel, BorderLayout.CENTER);
 
         // 버튼 패널
         JPanel buttonPanel = new JPanel();
         JButton recommendButton = new JButton("추천");
-        JButton closeButton = new JButton("뒤로");
+        recommendButton.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        recommendButton.setBackground(new Color(0, 120, 215));
+        recommendButton.setForeground(Color.WHITE);
 
-        // 추천 버튼 동작
+        JButton closeButton = new JButton("닫기");
+        closeButton.setFont(new Font("SansSerif", Font.PLAIN, 14));
+
+        // 추천 버튼 동작: 추천 기록 저장 및 랭킹 업데이트
         recommendButton.addActionListener(e -> {
-            saveRecommendation(menu);
-            updateRanking(); // 추천 후 랭킹 업데이트
+            saveRecommendation(menu); // 추천 기록 저장
+            updateRanking(); // 추천 랭킹 업데이트
             dialog.dispose();
         });
 
-        // 뒤로 버튼 동작
+        // 닫기 버튼 동작
         closeButton.addActionListener(e -> dialog.dispose());
 
         buttonPanel.add(recommendButton);
         buttonPanel.add(closeButton);
 
         dialog.add(buttonPanel, BorderLayout.SOUTH);
+
         dialog.setVisible(true);
     }
+
+
 
 
     // 추천 기록 저장

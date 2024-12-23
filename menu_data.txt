@@ -1,4 +1,4 @@
-맛집A,김치찌개,매운,7000,한식,images/kimchi.jpg
-맛집B,파스타,달콤한,12000,양식,images/pasta.jpg
-맛집C,초밥,담백한,15000,일식,images/sushi.jpg
-맛집D,짜장면,짭짤한,8000,중식,images/jajang.jpg
+맛집A,김치찌개,매운,7000,한식,중문,images/kimchi.jpg
+맛집B,파스타,달콤한,12000,양식,정문,images/pasta.jpg
+맛집C,초밥,담백한,15000,일식,문화제조창,images/sushi.jpg
+맛집D,짜장면,짭짤한,8000,중식,정문,images/jajang.jpg
