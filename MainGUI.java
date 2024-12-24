@@ -30,15 +30,17 @@ import java.util.stream.Collectors;
  *
  */
 public class MainGUI extends JFrame {
+
     /**
      * 메인 GUI를 초기화하고 구성 요소를 설정합니다.
      * 기본 레이아웃과 스타일을 적용합니다.
+     * @param dataFilePath 메뉴 데이터를 로드할 파일 경로
      */
 
     private DefaultListModel<String> rankingModel;
 
     public MainGUI(String dataFilePath) {
-        // GUI 초기화 코드...
+
         // 메뉴 데이터 로드
         List<MenuData> menuList = MenuLoader.loadMenuData(dataFilePath);
         if (menuList.isEmpty()) {
@@ -159,7 +161,11 @@ public class MainGUI extends JFrame {
 
     /**
      * 새 메뉴를 추가하기 위한 다이얼로그를 표시합니다.
-     * 사용자는 메뉴 데이터를 입력하고 저장할 수 있습니다.
+     * 사용자는 새로운 메뉴 데이터를 입력하고 저장할 수 있습니다.
+     *
+     * @created 2024-12-23
+     *
+     * @param menuList 현재 로드된 메뉴 데이터 목록
      */
     private void showAddMenuDialog(List<MenuData> menuList) {
         JDialog dialog = new JDialog(this, "새 메뉴 추가", true);
@@ -243,6 +249,8 @@ public class MainGUI extends JFrame {
      * 주어진 데이터를 menu_data.txt 파일에 저장합니다.
      * 파일이 존재하지 않으면 생성됩니다.
      *
+     * @created 2024-12-23
+     *
      * @param name 맛집 이름
      * @param menuName 메뉴 이름
      * @param taste 메뉴의 맛
@@ -263,6 +271,8 @@ public class MainGUI extends JFrame {
 
     /**
      * 추천 메뉴를 선택하고 다이얼로그에 결과를 표시합니다.
+     *
+     * @created 2024-12-22
      *
      * @param  menu 사용자가 선택한 맛,종류,가격,위치 필터
      */
@@ -350,7 +360,14 @@ public class MainGUI extends JFrame {
         dialog.setVisible(true);
     }
 
-
+    /**
+     * 추천 랭킹을 업데이트하여 UI에 반영합니다.
+     * recommendations.txt 파일에서 데이터를 읽어와 정렬한 후 상위 5개를 표시합니다.
+     *
+     * @created 2024-12-21
+     *
+     *
+     */
 
     private void updateRanking() {
         Map<String, Integer> recommendationCounts = new HashMap<>();
@@ -385,6 +402,16 @@ public class MainGUI extends JFrame {
             rankingModel.addElement(entry.getKey() + " (" + entry.getValue() + "회 추천)");
         }
     }
+
+    /**
+     * 추천 랭킹에서 선택된 메뉴의 세부 정보를 보여주는 다이얼로그를 표시합니다.
+     *
+     * @created 2024-12-22
+     *
+     * @param selected 선택된 랭킹 항목 (맛집 이름과 메뉴 이름 포함)
+     * @param menuList 현재 로드된 메뉴 데이터 목록
+     */
+
     private void showRankingDetailDialog(String selected, List<MenuData> menuList) {
         // 추천 랭킹에서 선택된 항목의 맛집 이름과 메뉴 이름을 분리
         String[] parts = selected.split("\\(")[0].trim().split(","); // "(3회 추천)" 제거
@@ -406,7 +433,11 @@ public class MainGUI extends JFrame {
     }
 
 
-
+    /**
+     * 추천된 메뉴 데이터를 recommendations.txt 파일에 저장합니다.
+     * @created 2024-12-22
+     * @param menu 추천된 메뉴 데이터
+     */
 
     private void saveRecommendation(MenuData menu) {
         try (FileWriter fw = new FileWriter("recommendations.txt", true)) {
