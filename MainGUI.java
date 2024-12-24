@@ -6,10 +6,39 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 메인 GUI를 생성하고 사용자와의 상호작용을 관리하는 클래스입니다.
+ * 사용자는 메뉴 데이터를 필터링하고 추천받을 수 있으며, 데이터를 추가하거나 관리할 수 있습니다.
+ *
+ * @author Yugeon-Kim
+ * @version 1.6
+ * @since 1.0
+ *
+ * @created 2024-11-25
+ * @lastModified 2024-12-24
+ *
+ * @changelog
+ * <ul>
+ *   <li>2024-11-25: 최초 생성</li>
+ *   <li>2024-12-19: MenuData와 MenuSelector와 연결 및 수정</li>
+ *   <li>2024-12-19: MenuLoader과 연결 및 데이터를 읽어오는 방식 변경 </li>
+ *   <li>2024-12-21: 다이얼로그 추가 및 레이아웃 업데이트</li>
+ *   <li>2024-12-21: 추천 랭킹 추가</li>
+ *   <li>2024-12-22: 추천 랭킹 다이얼로그 개선</li>
+ *   <li>2024-12-23: 위치 필터 추가 및 디자인 개선</li>
+ * </ul>
+ *
+ */
 public class MainGUI extends JFrame {
+    /**
+     * 메인 GUI를 초기화하고 구성 요소를 설정합니다.
+     * 기본 레이아웃과 스타일을 적용합니다.
+     */
+
     private DefaultListModel<String> rankingModel;
 
     public MainGUI(String dataFilePath) {
+        // GUI 초기화 코드...
         // 메뉴 데이터 로드
         List<MenuData> menuList = MenuLoader.loadMenuData(dataFilePath);
         if (menuList.isEmpty()) {
@@ -25,45 +54,39 @@ public class MainGUI extends JFrame {
         getContentPane().setBackground(new Color(244, 246, 249)); // 밝은 회색 배경
 
         // 상단: 타이틀
-        JLabel titleLabel = new JLabel("추천 메뉴 시스템");
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        JLabel titleLabel = ComponentFactory.createLabel("추천 메뉴 시스템");
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24)); // 타이틀 폰트 조정
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        titleLabel.setForeground(new Color(44, 62, 80)); // 텍스트 색상
         titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         add(titleLabel, BorderLayout.NORTH);
-
 
         // 왼쪽: 추천 조건 입력
         JPanel leftPanel = new JPanel(new GridLayout(6, 2, 10, 10));
         leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        leftPanel.setBackground(new Color(236, 240, 241)); // 밝은 패널 배경
+        leftPanel.setBackground(new Color(236, 240, 241));
 
-        JLabel tasteLabel = createLabel("맛:");
-        String[] tastes = {"", "달콤한", "매운", "짭짤한", "담백한"};
-        JComboBox<String> tasteComboBox = createComboBox(tastes);
+        JLabel tasteLabel = ComponentFactory.createLabel("맛:");
+        JComboBox<String> tasteComboBox = ComponentFactory.createComboBox(new String[]{"", "달콤한", "매운", "짭짤한", "담백한"});
 
-        JLabel typeLabel = createLabel("종류:");
-        String[] types = {"", "양식", "중식", "한식", "일식"};
-        JComboBox<String> typeComboBox = createComboBox(types);
+        JLabel typeLabel = ComponentFactory.createLabel("종류:");
+        JComboBox<String> typeComboBox = ComponentFactory.createComboBox(new String[]{"", "양식", "중식", "한식", "일식"});
 
-        JLabel priceLabel = createLabel("가격:");
-        JTextField priceField = createTextField();
+        JLabel priceLabel = ComponentFactory.createLabel("가격:");
+        JTextField priceField = ComponentFactory.createTextField();
 
-        JLabel excludeLabel = createLabel("제외:");
-        JTextField excludeField = createTextField();
+        JLabel excludeLabel = ComponentFactory.createLabel("제외:");
+        JTextField excludeField = ComponentFactory.createTextField();
 
-        JLabel locationLabel = createLabel("위치:");
-        String[] locations = {"", "중문", "정문", "문화제조창"};
-        JComboBox<String> locationComboBox = createComboBox(locations);
+        JLabel locationLabel = ComponentFactory.createLabel("위치:");
+        JComboBox<String> locationComboBox = ComponentFactory.createComboBox(new String[]{"", "중문", "정문", "문화제조창"});
 
-        JButton drawButton = createButton("추첨하기");
+        JButton drawButton = ComponentFactory.createButton("추첨하기");
+        JButton addMenuButton = ComponentFactory.createButton("메뉴 추가");
 
-        JButton addMenuButton = createButton("메뉴 추가");
-
-// 버튼 클릭 이벤트
+        // 이벤트 설정
         addMenuButton.addActionListener(e -> showAddMenuDialog(menuList));
 
-
+        // 왼쪽 패널에 추가
         leftPanel.add(tasteLabel);
         leftPanel.add(tasteComboBox);
         leftPanel.add(typeLabel);
@@ -74,7 +97,6 @@ public class MainGUI extends JFrame {
         leftPanel.add(excludeField);
         leftPanel.add(locationLabel);
         leftPanel.add(locationComboBox);
-
         leftPanel.add(addMenuButton);
         leftPanel.add(drawButton);
 
@@ -135,50 +157,10 @@ public class MainGUI extends JFrame {
         setVisible(true);
     }
 
-    private JLabel createLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        label.setForeground(new Color(44, 62, 80)); // 텍스트 색상
-        return label;
-    }
-
-    private JComboBox<String> createComboBox(String[] items) {
-        JComboBox<String> comboBox = new JComboBox<>(items);
-        comboBox.setBackground(Color.WHITE);
-        comboBox.setForeground(new Color(44, 62, 80));
-        comboBox.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        return comboBox;
-    }
-
-    private JTextField createTextField() {
-        JTextField textField = new JTextField();
-        textField.setBackground(Color.WHITE);
-        textField.setForeground(new Color(44, 62, 80));
-        textField.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        textField.setCaretColor(new Color(44, 62, 80)); // 커서 색상
-        return textField;
-    }
-
-    private JButton createButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("SansSerif", Font.BOLD, 14));
-        button.setBackground(new Color(93, 173, 226)); // 밝은 블루
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                button.setBackground(new Color(52, 152, 219)); // 호버 색상
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                button.setBackground(new Color(93, 173, 226)); // 기본 색상
-            }
-        });
-        return button;
-    }
-
+    /**
+     * 새 메뉴를 추가하기 위한 다이얼로그를 표시합니다.
+     * 사용자는 메뉴 데이터를 입력하고 저장할 수 있습니다.
+     */
     private void showAddMenuDialog(List<MenuData> menuList) {
         JDialog dialog = new JDialog(this, "새 메뉴 추가", true);
         dialog.setSize(400, 400);
@@ -257,7 +239,19 @@ public class MainGUI extends JFrame {
         dialog.setVisible(true);
     }
 
-    // 텍스트 파일에 MenuData 저장
+    /**
+     * 주어진 데이터를 menu_data.txt 파일에 저장합니다.
+     * 파일이 존재하지 않으면 생성됩니다.
+     *
+     * @param name 맛집 이름
+     * @param menuName 메뉴 이름
+     * @param taste 메뉴의 맛
+     * @param price 메뉴의 가격
+     * @param type 메뉴의 종류
+     * @param location 메뉴의 위치
+     * @param imagePath 메뉴 이미지의 파일 경로
+     */
+
     private void saveMenuDataToFile(String name, String menuName, String taste, String price, String type, String location, String imagePath) {
         try (FileWriter writer = new FileWriter("menu_data.txt", true)) {
             // 데이터를 텍스트 형식으로 저장
@@ -267,16 +261,11 @@ public class MainGUI extends JFrame {
         }
     }
 
-
-    // menu_data.txt에 MenuData 저장
-    private void saveMenuDataToFile(MenuData menu) {
-        try (FileWriter writer = new FileWriter("menu_data.txt", true)) {
-            // 데이터를 텍스트 형식으로 저장
-            writer.write(menu.toString() + "\n");
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "파일 저장 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
-        }
-    }
+    /**
+     * 추천 메뉴를 선택하고 다이얼로그에 결과를 표시합니다.
+     *
+     * @param  menu 사용자가 선택한 맛,종류,가격,위치 필터
+     */
 
     private void showRecommendationDialog(MenuData menu) {
         JDialog dialog = new JDialog(this, "추천 결과", true);
@@ -339,8 +328,8 @@ public class MainGUI extends JFrame {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(new Color(236, 240, 241));
 
-        JButton recommendButton = createButton("추천");
-        JButton closeButton = createButton("닫기");
+        JButton recommendButton =ComponentFactory.createButton("추천");
+        JButton closeButton = ComponentFactory.createButton("닫기");
 
         // 추천 버튼 동작
         recommendButton.addActionListener(e -> {
@@ -418,15 +407,7 @@ public class MainGUI extends JFrame {
 
 
 
-    private void saveMenuData(MenuData menu) {
-        try (FileWriter fw = new FileWriter("menu_data.txt", true)) {
-            fw.write(menu.getName() + "," + menu.getMenuName() + "," + menu.getTaste() + "," +
-                    menu.getPrice() + "," + menu.getType() + "," + menu.getLocation() + "," +
-                    menu.getImagePath() + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
     private void saveRecommendation(MenuData menu) {
         try (FileWriter fw = new FileWriter("recommendations.txt", true)) {
             // 맛집 이름과 메뉴 이름을 파일에 기록
